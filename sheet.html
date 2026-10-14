@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>シート｜理想の恋人クリエイトシート（非公式Web版）</title>
+<meta name="description" content="理想の恋人クリエイトシートをブラウザでそのまま記入できる非公式ファンメイドツール。">
+<meta property="og:title" content="理想の恋人クリエイトシート（非公式Web版）">
+<meta property="og:description" content="能力値・タイプ・デバフ・固有スキルをタップで記入して、あなたの理想の恋人を創ろう。">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root{
+  --pink:#ff36c4; --pink-soft:#ffd3f1; --yellow:#ffec3d; --bg:#e3e3e6; --paper:#e3e3e6; --ink:#ff36c4; --muted:#b0479a; --warn:#e0115f;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:#cfcfd4;font-family:"M PLUS Rounded 1c",sans-serif;color:var(--ink);-webkit-tap-highlight-color:transparent}
+.wrap{max-width:760px;margin:0 auto;padding:16px}
+.topnav{max-width:760px;margin:0 auto;padding:12px 16px 0;display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:14px}
+.topnav a{color:var(--pink);text-decoration:none}
+.topnav span{background:#fff;border:2px solid var(--pink);border-radius:99px;padding:2px 10px;font-size:12px}
+.sheet{background:var(--paper);border-left:8px solid var(--pink);border-right:8px solid var(--pink);border-radius:10px;padding:22px 26px 28px;margin-bottom:18px}
+.pager{display:flex;align-items:center;gap:10px;margin:6px 0 14px}
+.pager .x{font-family:"Dela Gothic One";font-size:22px;letter-spacing:2px;white-space:nowrap}
+.pager .bar{flex:1;background:var(--pink);color:#fff;border-radius:99px;text-align:center;font-weight:800;padding:4px 0;font-size:14px}
+.lead{text-align:center;font-weight:800;letter-spacing:.35em;font-size:13px;margin:0}
+h1{font-family:"Dela Gothic One";text-align:center;font-size:clamp(28px,7vw,52px);margin:4px 0 6px;font-weight:400;line-height:1.15}
+h1 small{font-size:.62em}
+.sub{text-align:center;font-size:13px;letter-spacing:.08em;margin:0 0 20px}
+.sec{display:flex;align-items:flex-end;gap:12px;border-bottom:3px solid var(--pink);margin:26px 0 16px;flex-wrap:wrap}
+.tag{background:var(--yellow);border:3px solid var(--pink);border-radius:99px;padding:3px 22px;font-family:"Dela Gothic One";font-size:20px;margin-bottom:-3px;position:relative;top:3px}
+.sec .hint{margin-left:auto;font-size:13px;padding-bottom:4px;letter-spacing:.06em}
+.status{display:inline-block;background:var(--pink);color:#fff;border-radius:6px;padding:2px 10px;font-weight:800;font-size:14px}
+.status.ok{background:#21b35b}.status.bad{background:var(--warn)}
+/* stats */
+.stat{display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:6px 12px;border-bottom:3px solid var(--pink);padding:10px 0}
+.stat svg{width:40px;height:40px;fill:var(--pink)}
+.stat .nm{font-family:"Dela Gothic One";font-size:26px;letter-spacing:.15em;line-height:1}
+.stat .ds{font-size:12px;font-weight:800;margin-top:4px}
+.stat .right{display:flex;align-items:center;gap:10px}
+.stat .num{width:38px;text-align:center;font-family:"Dela Gothic One";font-size:24px;border-bottom:2px solid var(--pink)}
+.boxes{display:flex;gap:5px}
+.box{width:34px;height:34px;border:4px solid var(--pink);background:transparent;padding:0;cursor:pointer;border-radius:2px;transition:background .12s}
+.box.on{background:var(--pink)}
+.box:focus-visible,.opt:focus-visible,.chip:focus-visible,.skill:focus-visible{outline:3px solid #333;outline-offset:2px}
+.colhead{display:flex;justify-content:flex-end;gap:12px;font-size:12px;font-weight:800}
+.colhead span{background:var(--yellow);padding:1px 8px}
+/* type */
+.types{display:grid;grid-template-columns:1fr 1fr;gap:18px 26px}
+.q{display:flex;gap:10px}
+.q .lbl{background:var(--pink);color:#fff;writing-mode:vertical-rl;font-weight:800;font-size:14px;padding:8px 4px;display:flex;align-items:center;justify-content:center;letter-spacing:.15em;min-width:30px}
+.q .opts{display:flex;flex-direction:column;gap:6px;flex:1}
+.opt{display:flex;align-items:center;gap:8px;background:none;border:none;color:var(--ink);font:inherit;font-weight:800;font-size:15px;text-align:left;cursor:pointer;padding:2px 0}
+.ck{flex:none;width:24px;height:24px;border:3px solid var(--pink);display:grid;place-items:center;color:#fff;font-size:16px;line-height:1}
+.on>.ck{background:var(--pink)}
+.on>.ck::after{content:"✓"}
+.opt b{font-family:"Dela Gothic One";font-weight:400}
+/* debuff */
+.debuff{display:grid;grid-template-columns:110px 1fr;gap:12px;align-items:start}
+.dtotal{text-align:center;position:sticky;top:12px}
+.dtotal .t{font-family:"Dela Gothic One";font-size:24px}
+.dtotal .v{border:2px solid var(--pink);height:64px;display:grid;place-items:center;font-family:"Dela Gothic One";font-size:34px;margin:6px 0 4px;background:#fff6}
+.dtotal .c{font-size:12px;font-weight:800}
+.tier{display:grid;grid-template-columns:44px 1fr;border:2px solid var(--pink);margin-bottom:10px}
+.tier .pt{background:var(--pink);color:#fff;font-family:"Dela Gothic One";writing-mode:vertical-rl;text-orientation:upright;display:grid;place-items:center;font-size:20px;letter-spacing:-2px;padding:6px 0}
+.tier .chips{display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 12px}
+.chip{display:flex;align-items:center;gap:5px;background:none;border:none;color:var(--ink);font:inherit;font-weight:800;font-size:14px;cursor:pointer;padding:2px 0;text-align:left}
+.chip .ck{width:18px;height:18px;border-width:2px;font-size:12px}
+.chip.dim{opacity:.4}
+/* skills */
+.wallet{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:-4px 0 14px;font-weight:800;font-size:14px}
+.stier{display:grid;grid-template-columns:70px 1fr;gap:14px;margin-bottom:24px}
+.stier .pt{background:var(--pink);color:#fff;font-family:"Dela Gothic One";writing-mode:vertical-rl;text-orientation:upright;display:grid;place-items:center;font-size:30px;letter-spacing:-4px}
+.skill{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;border-bottom:4px solid var(--pink);color:var(--ink);font:inherit;padding:8px 0;cursor:pointer;text-align:left;flex-wrap:wrap}
+.skill .ck{width:30px;height:30px}
+.skill .sn{font-family:"Dela Gothic One";font-size:22px;white-space:nowrap}
+.skill .sd{font-size:12.5px;font-weight:800;flex:1;min-width:180px}
+.skill.dim{opacity:.4}
+.skill.on,.chip.on{background:linear-gradient(transparent 55%,var(--yellow) 55%)}
+textarea{width:100%;min-height:150px;border:4px solid var(--pink);background:transparent;color:var(--ink);font:inherit;font-weight:800;font-size:15px;padding:12px;resize:vertical;border-radius:0}
+textarea::placeholder{color:#e48fcb}
+.credit{background:var(--pink);color:#fff;text-align:center;font-size:12px;font-weight:800;padding:4px 8px;margin-top:22px}
+.credit a{color:#fff}
+.tools{position:sticky;bottom:0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:10px;background:#cfcfd4ee;backdrop-filter:blur(4px);z-index:5}
+.tools button{background:var(--pink);color:#fff;border:none;border-radius:99px;font:inherit;font-weight:800;padding:10px 18px;cursor:pointer;font-size:14px}
+.tools button.ghost{background:#fff;color:var(--pink);border:2px solid var(--pink)}
+.toast{position:fixed;left:50%;bottom:76px;transform:translateX(-50%) translateY(20px);background:#333;color:#fff;padding:8px 16px;border-radius:99px;font-size:14px;font-weight:800;opacity:0;transition:.2s;pointer-events:none;z-index:9}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.shake{animation:sh .3s}
+@keyframes sh{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@media (max-width:600px){
+  .sheet{padding:16px 14px 22px;border-width:5px}
+  .types{grid-template-columns:1fr}
+  .stat{grid-template-columns:34px 1fr}
+  .stat svg{width:32px;height:32px}
+  .stat .right{grid-column:1/-1;justify-content:flex-end}
+  .box{width:30px;height:30px;border-width:3px}
+  .debuff{grid-template-columns:1fr}
+  .dtotal{position:static;display:flex;align-items:center;gap:10px;justify-content:center}
+  .dtotal .v{width:80px;height:50px;margin:0}
+  .stier{grid-template-columns:44px 1fr}
+  .stier .pt{font-size:22px}
+  .skill .sn{font-size:19px}
+  .pager .x{font-size:14px}
+  .sec .hint{margin-left:0}
+}
+</style>
+</head>
+<body>
+<nav class="topnav"><a href="./">← トップ</a><span>非公式ファンメイド</span></nav>
+<div class="wrap" id="capture">
+
+<!-- 1/3 -->
+<section class="sheet">
+  <div class="pager"><span class="x">✕✕✕</span><div class="bar">1 / 3</div><span class="x">✕✕✕</span></div>
+  <p class="lead">非公式Web版</p>
+  <h1>理想の恋人 <small>クリエイトシート</small></h1>
+  <p class="sub">順番に埋めて、あなたの「理想」を詰め込んだ恋人キャラクターシートを作成してみよう</p>
+
+  <div class="sec"><span class="tag">01. 能力値</span><span class="hint">数値の合計が<b>25点</b>になるように割り振ろう　<span class="status" id="statStatus"></span></span></div>
+  <div class="colhead"><span>数値</span><span>数値分塗りつぶそう</span></div>
+  <div id="stats"></div>
+</section>
+
+<!-- 2/3 -->
+<section class="sheet">
+  <div class="pager"><span class="x">✕✕✕</span><div class="bar">2 / 3</div><span class="x">✕✕✕</span></div>
+  <div class="sec"><span class="tag">02. タイプ</span><span class="hint">理想の解答にチェックをしていこう！</span></div>
+  <div class="types" id="types"></div>
+
+  <div class="sec"><span class="tag">03. 固有スキル</span><span class="hint">デバフで得るポイントで、固有スキルを選べるよ</span></div>
+  <p style="text-align:center;font-weight:800;margin:0 0 12px">以下のデバフ表から<b style="font-size:1.3em">3つ</b>選んで合計点を出そう！ <span class="status" id="debuffStatus"></span></p>
+  <div class="debuff">
+    <div class="dtotal"><div class="t">デバフ</div><div class="v" id="debuffTotal">0</div><div class="c">合計点数</div></div>
+    <div id="debuffs"></div>
+  </div>
+</section>
+
+<!-- 3/3 -->
+<section class="sheet">
+  <div class="pager"><span class="x">✕✕✕</span><div class="bar">3 / 3</div><span class="x">✕✕✕</span></div>
+  <div class="sec"><span class="tag">固有スキル</span><span class="hint">デバフの合計点数を消費してスキルを手に入れよう！</span></div>
+  <div class="wallet">所持 <span class="status" id="wHave">0pt</span> 使用 <span class="status" id="wUsed">0pt</span> 残り <span class="status" id="wLeft">0pt</span></div>
+  <div id="skills"></div>
+
+  <div class="sec"><span class="tag">04. 自由記入</span></div>
+  <textarea id="free" placeholder="名前・見た目・口ぐせ・出会い方…自由に書いてね"></textarea>
+
+  <div class="credit">参考 / エモクロアTRPG 公式ルールブック プレイヤー・セクション 共鳴者作成 ／ 原案シート: <a href="https://x.com/sukosuko_sukoya/status/2109570225633103909" target="_blank" rel="noopener">健屋花那さん</a>・デザイン ありあさん（非公式Web版）</div>
+</section>
+</div>
+
+<div class="tools">
+  <button id="btnImg">画像で保存</button>
+  <button id="btnCopy" class="ghost">テキストでコピー</button>
+  <button id="btnReset" class="ghost">リセット</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const ICONS = {
+  heart:'<svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.2C.8 8.2 3 4.5 6.6 4.5c2.1 0 3.5 1.2 5.4 3.1 1.9-1.9 3.3-3.1 5.4-3.1 3.6 0 5.8 3.7 4.2 7.3C19.5 16.4 12 21 12 21zm0-3.3s5.2-3.3 6.8-6.6c1-2.2-.3-4.3-2.2-4.3-1.4 0-2.4 1-4.6 3.2C9.8 7.8 8.8 6.8 7.4 6.8c-1.9 0-3.2 2.1-2.2 4.3 1.6 3.3 6.8 6.6 6.8 6.6z"/></svg>',
+  chat:'<svg viewBox="0 0 24 24"><path d="M3 4h18v13H8l-4 4v-4H3zM7.5 9.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm4.5 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm4.5 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"/></svg>',
+  hands:'<svg viewBox="0 0 24 24"><path d="M1 9l2-1 5 6v6c-3 0-5-2-6-4zM23 9l-2-1-5 6v6c3 0 5-2 6-4zM6 6l1-1 5 7-1 1zM18 6l-1-1-5 7 1 1zM9 4l1-1 3 5-1 1zM15 4l-1-1-3 5 1 1z"/></svg>',
+  book:'<svg viewBox="0 0 24 24"><path d="M4 5l9-3 8 4v13l-8 3-9-4zm2 2v9.5l7 3V9z"/></svg>',
+  sparkle:'<svg viewBox="0 0 24 24"><path d="M9 2l2 7 7 2-7 2-2 7-2-7-7-2 7-2zM19 1l1 3 3 1-3 1-1 3-1-3-3-1 3-1zM19 15l1 3 3 1-3 1-1 3-1-3-3-1 3-1z"/></svg>',
+  money:'<svg viewBox="0 0 24 24"><path d="M9 2h6l-2 3h-2zM10 6h4c4 3 6 7 6 10 0 4-3 6-8 6s-8-2-8-6c0-3 2-7 6-10zm1.3 4v1.1c-1.4.3-2.2 1.2-2.2 2.3 0 1.4 1.1 2 2.6 2.4 1.1.3 1.5.6 1.5 1.1s-.5.9-1.3.9c-.9 0-1.6-.4-2-.9l-.9 1c.5.6 1.3 1 2.3 1.1V20h1.4v-1.1c1.4-.3 2.3-1.2 2.3-2.4 0-1.4-1.1-2-2.6-2.4-1.1-.3-1.5-.5-1.5-1s.5-.8 1.1-.8c.7 0 1.3.3 1.7.7l.9-1c-.5-.5-1.2-.8-1.9-.9V10z"/></svg>',
+  shake:'<svg viewBox="0 0 24 24"><path d="M0 8h4l1 9H1zM24 8h-4l-1 9h4zM6 8l4-2 3 1 3-1 3 2v7l-6 5-3-2-2-2-2-1zm3 4l3 2 2-1-4-3z"/></svg>'
+};
+const STATS = [
+  ['愛情','一途さ・愛の重さ','heart'],
+  ['愛情表現','好きと言う・スキンシップ','chat'],
+  ['包容力','優しさ・受け止め力','hands'],
+  ['知性','頭の良さ・会話力','book'],
+  ['魅力','顔・色気・雰囲気','sparkle'],
+  ['生活力','仕事・家事・金銭感覚','money'],
+  ['相性','価値観・笑い・趣味','shake'],
+];
+const MAX_STAT = 6, STAT_TOTAL = 25;
+const TYPES = [
+  ['連絡',['用事がある時だけ','毎日そこそこ','ずっとLINEしてたい']],
+  ['距離感',['お互い一人時間大事','基本一緒、たまに別行動','可能ならずっと一緒♡']],
+  ['愛情表現',['言葉「好き」「かわいい」','行動「迎えに行く」「世話を焼く」','スキンシップ','プレゼント・サプライズ']],
+  ['嫉妬',['ほぼ嫉妬しない','嫉妬するけど言わない','「嫉妬した」って言う','かなり独占欲強め']],
+  ['喧嘩',['その場ですぐ話す','数時間冷却してから話す','翌日に持ち越す','とりあえず抱きしめる']],
+  ['甘やかし方',['「頑張れ」型','「無理しなくていいよ」型','何も言わず全部やってくれる','一緒に解決してくれる']],
+  ['将来への姿勢',['今が楽しければいい','付き合ってから考える','最初から結婚前提','付き合った瞬間、老後まで考える']],
+];
+const DEBUFFS = {
+  1:['服がダサい','かなりの方向音痴','寝起きがめちゃくちゃ悪い','いびきがデカい','料理が一切できない','LINEの返信がちょっと遅い','記念日に疎い','片付けが苦手'],
+  2:['趣味がまったく合わない','仕事がかなり忙しい','一人の時間がかなり必要','友達との予定を優先することが多い','誕生日・記念日をあまり重要視しない','部屋がかなり汚い','お金の使い方がちょっと荒い','LINE・電話がかなり少ない'],
+  3:['愛情表現がほとんどない','喧嘩すると翌日まで話したくない','かなり頑固','異性の友達がかなり多い','遠距離恋愛','かなりの仕事人間','浪費家','恋人より自分の時間を優先しがち'],
+  4:['元恋人と今でも仲のいい友達','かなり嫉妬深い','喧嘩すると数日間黙る','仕事が恋人より明確に優先','結婚願望がかなり薄い','将来的に海外移住したい','絶対に同棲したくない','一人の時間は基本連絡されたくない'],
+};
+const DEBUFF_PICK = 3;
+const SKILLS = {
+  3:[['感情察知','言わなくても「今日ちょっと元気ない？」に気づく。'],['完全記憶','好きな食べ物や何気なく言った「これ欲しい」を覚えている。'],['迎えに行くよ','困ったときはすぐ助けに来てくれる。'],['生活サポーター','料理・掃除・家事全般が得意。']],
+  5:[['言語化の天才','喧嘩しても逃げずに、自分の気持ちをちゃんと言葉にして話し合える。'],['絶対的味方','どんな状況でも、まずあなたの味方になってくれる。'],['甘やかしのプロ','落ち込んでいるときに、欲しい言葉・距離感・愛情表現を察してくれる。'],['笑わせる者','どれだけ落ち込んでいても、最後には笑わせてくれる。']],
+  7:[['永久恋愛バフ','何年付き合っても、付き合いたての頃と同じくらいあなたを好き。'],['完全相互理解','喧嘩やすれ違いが起きても、話し合えば必ず最後には理解し合える。'],['浮気フラグ完全消滅','生涯、あなた以外に恋愛感情を抱かない。'],['愛情保証','環境・容姿・年齢が変化しても、「あなたが好き」という根本だけは揺らがない。']],
+  9:[['運命共同体','人生で何が起きても、「一緒にいるためにはどうするか」を選び続ける。'],['永遠の恋人','何十年一緒にいても、恋愛感情・愛情表現・相手への興味がほとんど薄れない。'],['唯一無二','魅力的な人と出会っても、あなたを「代わりのいない特別な人」として一生愛し続ける。']],
+};
+
+const KEY = 'koibito-sheet-v1';
+const blank = () => ({stats:STATS.map(()=>0), types:TYPES.map(()=>null), debuffs:[], skills:[], free:''});
+let S = blank();
+try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(blank(), JSON.parse(raw)); } catch(e){}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
+
+const $ = id => document.getElementById(id);
+const sum = a => a.reduce((x,y)=>x+y,0);
+const toastEl = $('toast'); let tt;
+function toast(msg){ toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(tt); tt = setTimeout(()=>toastEl.classList.remove('show'),1800); }
+function shake(el){ el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
+
+const debuffPts = () => S.debuffs.reduce((t,k)=>t+Number(k.split(':')[0]),0);
+const skillPts = () => S.skills.reduce((t,k)=>t+Number(k.split(':')[0]),0);
+
+/* ---- build ---- */
+$('stats').innerHTML = STATS.map(([n,d,ic],i)=>`
+  <div class="stat">
+    ${ICONS[ic]}
+    <div><div class="nm">${n}</div><div class="ds">${d}</div></div>
+    <div class="right"><div class="num" id="sn${i}">0</div>
+      <div class="boxes">${Array.from({length:MAX_STAT},(_,j)=>`<button class="box" data-s="${i}" data-v="${j+1}" aria-label="${n} ${j+1}"></button>`).join('')}</div></div>
+  </div>`).join('');
+
+$('types').innerHTML = TYPES.map(([q,opts],i)=>`
+  <div class="q"><div class="lbl">${q}</div><div class="opts">
+    ${opts.map((o,j)=>`<button class="opt" data-t="${i}" data-v="${j}"><span class="ck"></span><b>${'ABCD'[j]}</b>${o}</button>`).join('')}
+  </div></div>`).join('');
+
+$('debuffs').innerHTML = Object.entries(DEBUFFS).map(([p,list])=>`
+  <div class="tier"><div class="pt">+${p}pt</div><div class="chips">
+    ${list.map((d,j)=>`<button class="chip" data-d="${p}:${j}"><span class="ck"></span>${d}</button>`).join('')}
+  </div></div>`).join('');
+
+$('skills').innerHTML = Object.entries(SKILLS).map(([p,list])=>`
+  <div class="stier"><div class="pt">${p}pt</div><div>
+    ${list.map(([n,d],j)=>`<button class="skill" data-k="${p}:${j}"><span class="ck"></span><span class="sn">《${n}》</span><span class="sd">${d}</span></button>`).join('')}
+  </div></div>`).join('');
+
+$('free').value = S.free;
+
+/* ---- render ---- */
+function render(){
+  S.stats.forEach((v,i)=>{ $('sn'+i).textContent = v; });
+  document.querySelectorAll('.box').forEach(b=>b.classList.toggle('on', +b.dataset.v <= S.stats[+b.dataset.s]));
+  const st = sum(S.stats), ss = $('statStatus');
+  ss.textContent = `${st} / ${STAT_TOTAL}`; ss.className = 'status' + (st===STAT_TOTAL?' ok':'');
+
+  document.querySelectorAll('.opt').forEach(b=>b.classList.toggle('on', S.types[+b.dataset.t] === +b.dataset.v));
+
+  const full = S.debuffs.length >= DEBUFF_PICK;
+  document.querySelectorAll('.chip').forEach(b=>{
+    const on = S.debuffs.includes(b.dataset.d);
+    b.classList.toggle('on', on); b.classList.toggle('dim', full && !on);
+  });
+  const dp = debuffPts();
+  $('debuffTotal').textContent = dp;
+  const ds = $('debuffStatus');
+  ds.textContent = `${S.debuffs.length} / ${DEBUFF_PICK}`; ds.className = 'status' + (full?' ok':'');
+
+  const used = skillPts(), left = dp - used;
+  $('wHave').textContent = dp+'pt'; $('wUsed').textContent = used+'pt';
+  $('wLeft').textContent = left+'pt'; $('wLeft').className = 'status' + (left<0?' bad':left===0&&used>0?' ok':'');
+  document.querySelectorAll('.skill').forEach(b=>{
+    const on = S.skills.includes(b.dataset.k);
+    b.classList.toggle('on', on); b.classList.toggle('dim', !on && Number(b.dataset.k.split(':')[0]) > left);
+  });
+  save();
+}
+
+/* ---- events ---- */
+document.addEventListener('click', e=>{
+  const box = e.target.closest('.box');
+  if (box){
+    const i = +box.dataset.s, v = +box.dataset.v;
+    const nv = S.stats[i] === v ? v-1 : v;
+    if (sum(S.stats) - S.stats[i] + nv > STAT_TOTAL){ shake(box.parentElement); toast(`合計は${STAT_TOTAL}点までだよ`); return; }
+    S.stats[i] = nv; return render();
+  }
+  const opt = e.target.closest('.opt');
+  if (opt){ const i = +opt.dataset.t, v = +opt.dataset.v; S.types[i] = S.types[i]===v ? null : v; return render(); }
+  const chip = e.target.closest('.chip');
+  if (chip){
+    const k = chip.dataset.d, at = S.debuffs.indexOf(k);
+    if (at >= 0) S.debuffs.splice(at,1);
+    else if (S.debuffs.length >= DEBUFF_PICK){ shake(chip); toast(`デバフは${DEBUFF_PICK}つまで！`); return; }
+    else S.debuffs.push(k);
+    if (skillPts() > debuffPts()) toast('ポイントが足りないスキルがあるよ');
+    return render();
+  }
+  const sk = e.target.closest('.skill');
+  if (sk){
+    const k = sk.dataset.k, at = S.skills.indexOf(k);
+    if (at >= 0) S.skills.splice(at,1);
+    else if (Number(k.split(':')[0]) > debuffPts() - skillPts()){ shake(sk); toast('ポイントが足りないよ'); return; }
+    else S.skills.push(k);
+    return render();
+  }
+});
+$('free').addEventListener('input', e=>{ S.free = e.target.value; save(); });
+
+$('btnReset').onclick = ()=>{ if (!confirm('全部リセットする？')) return; S = blank(); $('free').value=''; render(); toast('リセットしたよ'); };
+
+function asText(){
+  const L = ['【理想の恋人クリエイトシート】','■能力値'];
+  STATS.forEach(([n],i)=>L.push(`${n}：${'■'.repeat(S.stats[i])}${'□'.repeat(MAX_STAT-S.stats[i])} ${S.stats[i]}`));
+  L.push('■タイプ');
+  TYPES.forEach(([q,o],i)=>L.push(`${q}：${S.types[i]==null?'—':'ABCD'[S.types[i]]+' '+o[S.types[i]]}`));
+  L.push(`■デバフ（${debuffPts()}pt）`);
+  S.debuffs.forEach(k=>{const [p,j]=k.split(':'); L.push(`・${DEBUFFS[p][j]}（+${p}）`);});
+  L.push('■固有スキル');
+  S.skills.forEach(k=>{const [p,j]=k.split(':'); L.push(`《${SKILLS[p][j][0]}》（${p}pt）`);});
+  if (S.free.trim()) L.push('■自由記入', S.free.trim());
+  return L.join('\n');
+}
+$('btnCopy').onclick = async ()=>{
+  try { await navigator.clipboard.writeText(asText()); toast('コピーしたよ'); }
+  catch(e){ prompt('コピーしてね', asText()); }
+};
+$('btnImg').onclick = async ()=>{
+  if (!window.html2canvas){ toast('画像化ライブラリを読み込めなかったよ'); return; }
+  toast('画像を作成中…');
+  const ta = $('free'), div = document.createElement('div');
+  // textarea は html2canvas で折り返されないので一時的に div に差し替え
+  div.textContent = ta.value; div.style.cssText = 'border:4px solid var(--pink);padding:12px;min-height:150px;white-space:pre-wrap;font-weight:800;font-size:15px';
+  ta.replaceWith(div);
+  try {
+    const c = await html2canvas($('capture'), {backgroundColor:'#cfcfd4', scale:2, useCORS:true});
+    const a = document.createElement('a'); a.download = 'risou-no-koibito.png'; a.href = c.toDataURL('image/png'); a.click();
+    toast('保存したよ');
+  } catch(e){ toast('画像の作成に失敗しちゃった'); }
+  finally { div.replaceWith(ta); }
+};
+
+render();
+</script>
+</body>
+</html>
